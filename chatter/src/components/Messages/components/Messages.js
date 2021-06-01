@@ -9,6 +9,7 @@ import Footer from "./Footer";
 import Message from "./Message";
 import "../styles/_messages.scss";
 import { useState } from "react";
+import uuid from "react-uuid";
 import INIT_BOT_MSG from "../../../common/constants/initialBottyMessage";
 
 const socket = io(config.BOT_SERVER_ENDPOINT, {
@@ -29,12 +30,17 @@ function Messages() {
   };
 
   //Creating a messages array for message list
-  const [messages, setMessages] = useState([INIT_BOT_MSG]);
+  //    Changed State to array of objects on studying the Message component for message structure
+  const [messages, setMessages] = useState([
+    { message: INIT_BOT_MSG, user: "bot", id: uuid() },
+  ]);
 
   //Defining sendMessage
 
   const sendMessage = () => {
-    setMessages([...messages, message]);
+    //Creating message object with user me as described in constant in Message component.
+    const message_object = { message, user: "me", id: uuid() };
+    setMessages([...messages, message_object]);
   };
 
   //Creating a boolean state to check if bot is typing or not
@@ -43,7 +49,18 @@ function Messages() {
   return (
     <div className="messages">
       <Header />
-      <div className="messages__list" id="message-list"></div>
+      <div className="messages__list" id="message-list">
+        {/* Using messages state to map through all messages and render Message component for every message. */}
+        {messages.map((m, index) => {
+          return (
+            <Message
+              message={m}
+              nextMessage={messages[index + 1]}
+              botTyping={isBotTyping}
+            />
+          );
+        })}
+      </div>
       <Footer
         message={message}
         sendMessage={sendMessage}
